@@ -1,7 +1,8 @@
-rock_library(dvl_rti
-    SOURCES Dummy.cpp
-    HEADERS Dummy.hpp)
+rock_library(dvl_seapilot
+    SOURCES Driver.cpp
+    HEADERS Driver.hpp
+    DEPS_PKGCONFIG base-types iodrivers_base)
 
-rock_executable(dvl_rti_bin Main.cpp
-    DEPS dvl_rti)
+rock_executable(dvl_seapilot_bin Main.cpp
+    DEPS dvl_seapilot)
 

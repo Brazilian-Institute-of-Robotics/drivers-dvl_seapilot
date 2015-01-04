@@ -1,3 +1,2 @@
 rock_testsuite(test_suite suite.cpp
-   test_Dummy.cpp
-   DEPS dvl_rti)
+   DEPS dvl_seapilot)
