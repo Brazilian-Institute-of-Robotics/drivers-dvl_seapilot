@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <boost/algorithm/string.hpp>
+#include <fstream>
 
 namespace dvl_seapilot
 {
@@ -111,6 +112,16 @@ namespace dvl_seapilot
 
 
         measurement = internal_measurement;
+        return true;
+    }
+
+    bool Driver::startMeasurement(){
+        writePacket(reinterpret_cast<uint8_t const*>("START\r"), 6, 100);
+        return true;
+    }
+
+    bool Driver::stopMeasurment(){
+        writePacket(reinterpret_cast<uint8_t const*>("STOP\r"), 5, 100);
         return true;
     }
 

@@ -12,6 +12,56 @@ namespace dvl_seapilot
         MEASUREMENT
     };
 
+    enum BottomTrackingMode{
+        NARROWBAND_LONG_RANGE = 0,
+        BROADBAND_CODED_TRANSMIT = 1,
+        BROADBAND_NON_CODED_TRANSMIT = 2,
+        BROADBAND_NON_CODE_PULSE_TO_PULSE = 4,
+        AUTO_SWITCH = 7
+    };
+
+    enum SensorMode{
+        COMMAND = 0,
+        SENSOR = 1,
+        INTERNAL_CALCULATION =2
+    };
+
+    struct Config{
+        bool bt_enable;
+        BottomTrackingMode bt_mode;
+        double bt_pulse_to_pulse_lag;
+        double bt_long_range_depth;
+        double bt_correlation_threshold;
+        double bt_q_velocity_threshold;
+        double bt_v_velocity_threshold;
+        double bt_snr_shallow_detection_threshold;
+        double bt_deep_snr_depth;
+        double bt_snr_deep_detection_threshold;
+        double bt_high_gain_depth;
+        double bt_blank;
+        double bt_max_depth;
+        double bt_time_between_pings;
+        double bt_output_low_pass_filter_time_constant;
+        double bt_reference_low_pass_filter_time_constant;
+        double bt_reference_outlier_count;
+        double bt_reference_outlier_threshold;
+        double bt_output_coast_count;
+        bool wt_enable;
+        bool wt_broadband_enable;
+        double wt_blank;
+        double wt_bin_size;
+        double wt_time_between_pings;
+        SensorMode water_temperature_source;
+        SensorMode transducer_depth_source;
+        SensorMode salinity_source;
+        SensorMode speed_of_sound_source;
+        double water_salinity;
+        double water_temperature;
+        double tranducer_depth;
+        double water_speed_of_sound;
+        double headding_offdet;
+    };
+
     struct Measurement{
         double start_time;
         int sample_number;
@@ -80,6 +130,8 @@ namespace dvl_seapilot
         std::vector<std::string> split(uint8_t const* data, size_t const size) const; 
         int getInt(std::string const s) const;
         double getDouble(std::string const s) const;
+        bool startMeasurement();
+        bool stopMeasurment();
     };
 
 } // end namespace dvl_seapilot
