@@ -101,7 +101,7 @@ namespace dvl_seapilot
             int packet_size = readPacket(&buffer[0], buffer.size(), timeout);
             int packet_type;
             if(packet_size > 0){ 
-                std::cout << "PACKET_SIZE: " << packet_size << std::endl;
+//                std::cout << "PACKET_SIZE: " << packet_size << std::endl;
                 packet_type = this->parsePacket(&buffer[0], packet_size, internal_measurement);
             }
             if(packet_type == 30){
