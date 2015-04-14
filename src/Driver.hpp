@@ -122,8 +122,13 @@ namespace dvl_seapilot
         Driver();
         void open(std::string const& uri);
         bool readMeasurement(Measurement &measurement);
-        private:
+       
+	protected:
+	std::string last_command;
+ 
+	private:
         Mode current_mode;
+	
 
         int parsePacket(uint8_t const *buffer, size_t packet_size, Measurement &measurement);
         std::vector<float> getVector(uint8_t *buffer, size_t start, size_t end) const;

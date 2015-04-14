@@ -116,7 +116,11 @@ namespace dvl_seapilot
     }
 
     bool Driver::startMeasurement(){
-        writePacket(reinterpret_cast<uint8_t const*>("START\r"), 6, 100);
+	current_mode = CONFIGURATION;
+        last_command = "START\r";
+	writePacket(reinterpret_cast<uint8_t const*>("START\r"), 6, 100);
+        base::Time timeout = base::Time().fromSeconds(10);
+        int packet_size = readPacket(&buffer[0], buffer.size(), timeout);
         return true;
     }
 
