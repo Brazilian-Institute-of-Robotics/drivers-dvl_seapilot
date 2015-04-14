@@ -101,7 +101,6 @@ namespace dvl_seapilot
             int packet_size = readPacket(&buffer[0], buffer.size(), timeout);
             int packet_type;
             if(packet_size > 0){ 
-                std::cout << "PACKET_SIZE: " << packet_size << std::endl;
                 packet_type = this->parsePacket(&buffer[0], packet_size, internal_measurement);
             }
             if(packet_type == 30){
@@ -124,7 +123,7 @@ namespace dvl_seapilot
         return true;
     }
 
-    bool Driver::stopMeasurment(){
+    bool Driver::stopMeasurement(){
         writePacket(reinterpret_cast<uint8_t const*>("STOP\r"), 5, 100);
         return true;
     }
@@ -169,7 +168,6 @@ namespace dvl_seapilot
             case 31:
                 measurement.mass_heading   = this->getDouble(packet.at(1).substr(0,1)) + (this->getDouble(packet.at(1).substr(2, 3)))/1000; 
                 measurement.mass_pitch     = this->getDouble(packet.at(2).substr(0,1)) + (this->getDouble(packet.at(2).substr(2, 3)))/1000; 
-                measurement.mass_roll      = this->getDouble(packet.at(3).substr(0,1)) + (this->getDouble(packet.at(3).substr(2, 3)))/1000; 
                 return 31;
         }
     }
@@ -219,3 +217,4 @@ namespace dvl_seapilot
         return value;
     }
 }
+#include "Driver.hpp"

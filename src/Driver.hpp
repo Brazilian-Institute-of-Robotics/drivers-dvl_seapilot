@@ -127,6 +127,8 @@ namespace dvl_seapilot
 	std::string last_command;
  
 	private:
+        bool startMeasurement();
+        bool stopMeasurement();
         Mode current_mode;
 	
 
@@ -135,8 +137,6 @@ namespace dvl_seapilot
         std::vector<std::string> split(uint8_t const* data, size_t const size) const; 
         int getInt(std::string const s) const;
         double getDouble(std::string const s) const;
-        bool startMeasurement();
-        bool stopMeasurment();
     };
 
 } // end namespace dvl_seapilot
