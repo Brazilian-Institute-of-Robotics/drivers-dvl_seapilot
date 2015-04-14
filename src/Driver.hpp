@@ -123,7 +123,7 @@ namespace dvl_seapilot
         void open(std::string const& uri);
         bool readMeasurement(Measurement &measurement);
         bool startMeasurement();
-        bool stopMeasurment();
+        bool stopMeasurement();
         private:
         Mode current_mode;
 
