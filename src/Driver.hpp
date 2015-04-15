@@ -122,13 +122,13 @@ namespace dvl_seapilot
         Driver();
         void open(std::string const& uri);
         bool readMeasurement(Measurement &measurement);
+        bool startMeasurement();
+        bool stopMeasurement();
        
 	protected:
 	std::string last_command;
  
 	private:
-        bool startMeasurement();
-        bool stopMeasurement();
         Mode current_mode;
 	
 
