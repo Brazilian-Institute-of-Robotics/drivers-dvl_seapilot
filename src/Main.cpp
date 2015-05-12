@@ -1,40 +1,34 @@
 #include <iostream>
 #include <dvl_seapilot/Driver.hpp>
+#include <dvl_teledyne/PD0Messages.hpp>
+
+void usage()
+{
+    std::cerr << "dvl_seapilot_read DEVICE" << std::endl;
+}
 
 int main(int argc, char** argv)
 {
-    std::cout << "instanciate driver" << std::endl;
+    if (argc != 2)
+    {
+        usage();
+        return 1;
+    }
+
     dvl_seapilot::Driver driver;
-
-    std::cout << "open devive" << std::endl;
     driver.open(argv[1]);
+    driver.setReadTimeout(base::Time::fromSeconds(5));
+    driver.startAcquisition();
 
-    dvl_seapilot::Measurement measurement;
-        
-    std::cout << "open devive" << std::endl;
-    while(driver.readMeasurement(measurement)){
-        std::cout << "READET_PACKET:" << std::endl;
-        std::cout << "- START_TIME:     " << measurement.start_time << std::endl;
-        std::cout << "- SAMPLE-NUMBER:  " << measurement.sample_number << std::endl;
-        std::cout << "- TEMPERATURE:    " << measurement.temperature << std::endl;
-        std::cout << "- BOTTOM_X:       " << measurement.bottom_x << std::endl;
-        std::cout << "- BOTTOM_Y:       " << measurement.bottom_y << std::endl;
-        std::cout << "- BOTTOM_Z:       " << measurement.bottom_z << std::endl;
-        std::cout << "- BOTTOM_E:       " << measurement.bottom_e << std::endl;
-        std::cout << "- BOTTOM_N:       " << measurement.bottom_n << std::endl;
-        std::cout << "- BOTTOM_U:       " << measurement.bottom_u << std::endl;
-        std::cout << "- BOTTOM_DEPTH:   " << measurement.bottom_depth << std::endl;
-        std::cout << "- BOTTOM_HEADING: " << measurement.bottom_heading << std::endl;
-        std::cout << "- BOTTOM_PITCH:   " << measurement.bottom_pitch << std::endl;
-        std::cout << "- BOTTOM_ROLL:    " << measurement.bottom_roll << std::endl;
-        std::cout << "- MASS_X:         " << measurement.mass_x << std::endl;
-        std::cout << "- MASS_Y:         " << measurement.mass_y << std::endl;
-        std::cout << "- MASS_Z:         " << measurement.mass_z << std::endl;
-        std::cout << "- MASS_E:         " << measurement.mass_e << std::endl;
-        std::cout << "- MASS_N:         " << measurement.mass_n << std::endl;
-        std::cout << "- MASS_U:         " << measurement.mass_u << std::endl;
-        std::cout << "- MASS_DEPTH:     " << measurement.mass_depth << std::endl;
+    while(true)
+    {
+        driver.read();
 
+        dvl_teledyne::BottomTracking const& tracking = driver.bottomTracking;
+        std::cout << tracking.time.toString() << " " << driver.status.seq;
+        for (int beam = 0; beam < 4; ++beam)
+            std::cout << " " << tracking.range[beam] << " " << tracking.velocity[beam] << " " << tracking.evaluation[beam];
+        std::cout << std::endl;
     }
 
 
