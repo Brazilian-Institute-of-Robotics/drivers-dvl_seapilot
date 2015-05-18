@@ -1,6 +1,8 @@
 #include "Driver.hpp"
 #include <iostream>
 #include <boost/lexical_cast.hpp>
+#include <sys/time.h>
+#include <time.h>
 
 namespace dvl_seapilot
 {
@@ -8,6 +10,7 @@ namespace dvl_seapilot
 Driver::Driver() : iodrivers_base::Driver(1000000), output_coordinate_system(INSTRUMENT)
 {
     buffer.resize(1000000);
+    ensemble_interval = base::Time::fromSeconds(1.0);
 }
 
 void Driver::open(std::string const& uri)
@@ -28,14 +31,38 @@ void Driver::startAcquisition()
 {
     if (!conf_mode)
         throw std::logic_error("Not in configuration mode. Acquisition has already started.");
-
+    
+    // write ensemble interval
+    std::string interval = "CEI 00:";
+    interval += ensemble_interval.toString(base::Time::Seconds, "%M:%S");
+    interval += '.';
+    struct timeval tv = ensemble_interval.toTimeval();
+    int u_secs = tv.tv_usec;
+    std::string m_secs = boost::lexical_cast<std::string>((int) (u_secs/1000.0));
+    if(m_secs.size() > 0)
+        interval += m_secs.data()[0];
+    else
+        interval += '0';
+    if(m_secs.size() > 1)
+        interval += m_secs.data()[1];
+    else
+        interval += '0';
+    std::cerr << "time: " << interval << std::endl;
+    interval += '\r';
+    writePacket(reinterpret_cast<uint8_t const*>(interval.data()), interval.size(), 100);
+    readConfigurationAck();
+    
+    // write output mode
     std::string output_type = "CEOUTPUT 100,";
     output_type += boost::lexical_cast<char>((int)output_coordinate_system);
     output_type += '\r';
     writePacket(reinterpret_cast<uint8_t const*>(output_type.data()), output_type.size(), 100);
     readConfigurationAck();
+    
+    // write start
     writePacket(reinterpret_cast<uint8_t const*>("START\r"), 6, 100);
     readConfigurationAck();
+    
     conf_mode = false;
 }
 
@@ -66,6 +93,11 @@ void Driver::readConfigurationAck(const base::Time& timeout)
 void Driver::setOutputConfiguration(VELOCITY_COORDINATE_SYSTEM output_coordinate_system)
 {
     this->output_coordinate_system = output_coordinate_system;
+}
+
+void Driver::setEnsembleInterval(double seconds)
+{
+    this->ensemble_interval = base::Time::fromSeconds(seconds);
 }
 
 int Driver::extractPacket(const uint8_t* buffer, size_t buffer_size) const

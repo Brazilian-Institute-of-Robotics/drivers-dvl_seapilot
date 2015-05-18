@@ -59,6 +59,8 @@ namespace dvl_seapilot
         
         /** Configures the output coordinate system */
         void setOutputConfiguration(VELOCITY_COORDINATE_SYSTEM output_coordinate_system);
+        
+        void setEnsembleInterval(double seconds);
 
     protected:
         int extractPacket(uint8_t const *buffer, size_t buffer_size) const;
@@ -67,6 +69,7 @@ namespace dvl_seapilot
         
         std::vector<uint8_t> buffer;
         bool conf_mode;
+        base::Time ensemble_interval;
         VELOCITY_COORDINATE_SYSTEM output_coordinate_system;
     };
 
