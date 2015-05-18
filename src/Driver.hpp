@@ -5,6 +5,8 @@
 #include <iodrivers_base/Driver.hpp>
 #include <base/Float.hpp>
 #include <dvl_teledyne/PD0Parser.hpp>
+#include <stdint.h>
+#include <boost/static_assert.hpp>
 
 namespace dvl_seapilot
 {
@@ -17,6 +19,14 @@ namespace dvl_seapilot
         {
             BEAM = 0, INSTRUMENT, EARTH, SHIP
         };
+        
+        struct ConfigurationAck
+        {
+            enum CONFIGURATION_PROTOCOL { ACK = 0x06, NAK = 0x15, CR = 0x0d, LF = 0x0a};
+            uint8_t echo;
+            uint16_t msg_end; // carriage return + linefeed
+        } __attribute__((packed));
+        BOOST_STATIC_ASSERT(sizeof(ConfigurationAck) == 3);
         
         Driver();
         
@@ -52,6 +62,7 @@ namespace dvl_seapilot
 
     protected:
         int extractPacket(uint8_t const *buffer, size_t buffer_size) const;
+        int extractConfigurationPacket(uint8_t const *buffer, size_t buffer_size) const;
         
         
         std::vector<uint8_t> buffer;

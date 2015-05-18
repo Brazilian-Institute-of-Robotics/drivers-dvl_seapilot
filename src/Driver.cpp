@@ -50,11 +50,13 @@ void Driver::readConfigurationAck(const base::Time& timeout)
     if (!conf_mode)
         throw std::logic_error("Not in configuration mode. Acquisition has already started.");
     int packet_size = readPacket(&buffer[0], buffer.size(), timeout);
-    if (packet_size == 3 && buffer[1] == 0x0d && buffer[2] == 0x0a)
+    
+    if(packet_size == sizeof(ConfigurationAck))
     {
-        if(buffer[0] == 0x06) // received ACK
+        ConfigurationAck const& ack = *reinterpret_cast<ConfigurationAck const*>(&buffer[0]);
+        if(ack.echo == ConfigurationAck::ACK) // received ACK
             return;
-        else if(buffer[1] == 0x15) // received NAK
+        else if(ack.echo == ConfigurationAck::NAK) // received NAK
             throw std::runtime_error("The device received an invalid command.");
     }
     throw std::runtime_error("Received unknown message from device.");
@@ -67,7 +69,47 @@ void Driver::setOutputConfiguration(VELOCITY_COORDINATE_SYSTEM output_coordinate
 
 int Driver::extractPacket(const uint8_t* buffer, size_t buffer_size) const
 {
-    return PD0Parser::extractPacket(buffer, buffer_size);
+    if(conf_mode)
+        return extractConfigurationPacket(buffer, buffer_size);
+    else
+        return PD0Parser::extractPacket(buffer, buffer_size);
+}
+
+int Driver::extractConfigurationPacket(const uint8_t* buffer, size_t buffer_size) const
+{
+    if(buffer_size < sizeof(ConfigurationAck))
+    {
+        // to less data, wait for new data
+        return 0;
+    }
+    
+    // search for the carriage return <CR> and linefeed <LF>
+    size_t packet_end;
+    for(packet_end = 1; packet_end < buffer_size; packet_end++)
+    {
+        if(buffer[packet_end-1] == ConfigurationAck::CR &&
+            buffer[packet_end] == ConfigurationAck::LF)
+            break;
+    }
+
+    if(packet_end == buffer_size)
+    {
+        // no packet end in buffer, wait for new data
+        return 0;
+    }
+    else if(packet_end > sizeof(ConfigurationAck)-1)
+    {
+        // realign the IODriver buffer to the start of the candidate packet
+        return -(packet_end-(sizeof(ConfigurationAck)-1));
+    }
+    else if(buffer[0] != ConfigurationAck::ACK && buffer[0] != ConfigurationAck::NAK)
+    {
+        // not actually a packet. Drop the msg and let IODriver call
+        // us back
+        return -sizeof(ConfigurationAck);
+    }
+    
+    return sizeof(ConfigurationAck);
 }
 
 }
