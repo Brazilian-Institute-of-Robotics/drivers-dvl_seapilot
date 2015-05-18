@@ -1,5 +1,6 @@
 #include "Driver.hpp"
 #include <iostream>
+#include <boost/lexical_cast.hpp>
 
 namespace dvl_seapilot
 {
@@ -29,7 +30,7 @@ void Driver::startAcquisition()
         throw std::logic_error("Not in configuration mode. Acquisition has already started.");
 
     std::string output_type = "CEOUTPUT 100,";
-    output_type += (uint8_t)(output_coordinate_system);
+    output_type += boost::lexical_cast<char>((int)output_coordinate_system);
     output_type += '\r';
     writePacket(reinterpret_cast<uint8_t const*>(output_type.data()), output_type.size(), 100);
     readConfigurationAck();
