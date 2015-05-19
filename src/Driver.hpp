@@ -65,6 +65,7 @@ namespace dvl_seapilot
     protected:
         int extractPacket(uint8_t const *buffer, size_t buffer_size) const;
         int extractConfigurationPacket(uint8_t const *buffer, size_t buffer_size) const;
+        void cleanComChannel();
         
         
         std::vector<uint8_t> buffer;

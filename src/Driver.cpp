@@ -17,6 +17,11 @@ void Driver::open(std::string const& uri)
 {
     openURI(uri);
     
+    conf_mode = true;
+    // clean communication channel
+    cleanComChannel();
+
+    // send stop command to enter configuration mode
     stopAcquisition();
 }
 
@@ -71,6 +76,16 @@ void Driver::stopAcquisition()
     writePacket(reinterpret_cast<uint8_t const*>("STOP\r"), 5, 100);
     conf_mode = true;
     readConfigurationAck();
+}
+
+void Driver::cleanComChannel()
+{
+    try
+    {
+        writePacket(reinterpret_cast<uint8_t const*>("\r"), 1, 100);
+        readConfigurationAck();
+    }
+    catch (std::runtime_error e) {}
 }
 
 void Driver::readConfigurationAck(const base::Time& timeout)
