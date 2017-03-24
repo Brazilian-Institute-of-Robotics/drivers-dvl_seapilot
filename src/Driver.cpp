@@ -16,7 +16,7 @@ Driver::Driver() : iodrivers_base::Driver(1000000), output_coordinate_system(INS
 void Driver::open(std::string const& uri)
 {
     openURI(uri);
-    
+
     conf_mode = true;
     // clean communication channel
     cleanComChannel();
@@ -31,12 +31,18 @@ void Driver::read()
     if (packet_size)
         PD0Parser::parseEnsemble(&buffer[0], packet_size);
 }
-    
-void Driver::startAcquisition()
+
+void Driver::configure()
+{
+    configureAcquisitionParameters();
+    configureProfilingParameters();
+}
+
+void Driver::configureAcquisitionParameters()
 {
     if (!conf_mode)
         throw std::logic_error("Not in configuration mode. Acquisition has already started.");
-    
+
     // write ensemble interval
     std::string interval = "CEI 00:";
     interval += ensemble_interval.toString(base::Time::Seconds, "%M:%S");
@@ -56,18 +62,55 @@ void Driver::startAcquisition()
     interval += '\r';
     writePacket(reinterpret_cast<uint8_t const*>(interval.data()), interval.size(), 100);
     readConfigurationAck();
-    
+
     // write output mode
     std::string output_type = "CEOUTPUT 100,";
     output_type += boost::lexical_cast<char>((int)output_coordinate_system);
     output_type += '\r';
     writePacket(reinterpret_cast<uint8_t const*>(output_type.data()), output_type.size(), 100);
     readConfigurationAck();
-    
+}
+
+void Driver::configureProfilingParameters()
+{
+    if (!conf_mode)
+        throw std::logic_error("Not in configuration mode. Acquisition has already started.");
+        
+    // write enable or disable water profiling mode
+    std::string water_profile_coomand = "CWPON[0] ";
+    water_profile_coomand += boost::lexical_cast<char>((int)mode);
+    water_profile_coomand += " 1, 0.000, 0.000\r";
+    writePacket(reinterpret_cast<uint8_t const*>(water_profile_coomand.data()), water_profile_coomand.size(), 100);
+    readConfigurationAck();
+
+    // write the bin number
+    std::string bin_number_command = "CWPBN[0] ";
+    bin_number_command += boost::lexical_cast<std::string>((int)bin_number);
+    bin_number_command += '\r';
+    writePacket(reinterpret_cast<uint8_t const*>(bin_number_command.data()), bin_number_command.size(), 100);
+    readConfigurationAck();
+
+    // write the bin size
+    std::string bin_size_command = "CWPBS[0] ";
+    bin_size_command += boost::lexical_cast<std::string>((double)bin_size);
+    bin_size_command += '\r';
+    writePacket(reinterpret_cast<uint8_t const*>(bin_size_command.data()), bin_size_command.size(), 100);
+    readConfigurationAck();
+
+    // write the blank size
+    std::string blank_lenght_command = "CWPBL[0] ";
+    blank_lenght_command += boost::lexical_cast<std::string>((double)blank_lenght);
+    blank_lenght_command += '\r';
+    writePacket(reinterpret_cast<uint8_t const*>(blank_lenght_command.data()), blank_lenght_command.size(), 100);
+    readConfigurationAck();
+}
+
+void Driver::startAcquisition()
+{
     // write start
     writePacket(reinterpret_cast<uint8_t const*>("START\r"), 6, 100);
     readConfigurationAck();
-    
+
     conf_mode = false;
 }
 
@@ -93,7 +136,7 @@ void Driver::readConfigurationAck(const base::Time& timeout)
     if (!conf_mode)
         throw std::logic_error("Not in configuration mode. Acquisition has already started.");
     int packet_size = readPacket(&buffer[0], buffer.size(), timeout);
-    
+
     if(packet_size == sizeof(ConfigurationAck))
     {
         ConfigurationAck const& ack = *reinterpret_cast<ConfigurationAck const*>(&buffer[0]);
@@ -130,7 +173,7 @@ int Driver::extractConfigurationPacket(const uint8_t* buffer, size_t buffer_size
         // to less data, wait for new data
         return 0;
     }
-    
+
     // search for the carriage return <CR> and linefeed <LF>
     size_t packet_end;
     for(packet_end = 1; packet_end < buffer_size; packet_end++)
@@ -156,8 +199,28 @@ int Driver::extractConfigurationPacket(const uint8_t* buffer, size_t buffer_size
         // us back
         return -sizeof(ConfigurationAck);
     }
-    
+
     return sizeof(ConfigurationAck);
+}
+
+void Driver::setBinSize(double bin_size)
+{
+    this->bin_size = bin_size;
+}
+
+void Driver::setBinNumber(uint8_t bin_number)
+{
+    this->bin_number = bin_number;
+}
+
+void Driver::setBlankLenght(double blank_lenght)
+{
+    this->blank_lenght = blank_lenght;
+}
+
+void Driver::setOperatingMode(OPERATING_MODE mode)
+{
+    this->mode = mode;
 }
 
 }
