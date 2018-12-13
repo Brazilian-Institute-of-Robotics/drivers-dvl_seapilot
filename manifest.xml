@@ -4,7 +4,7 @@
   </description>
   <maintainer>Sascha Arnold/sascha.arnold@dfki.de</maintainer>
   <author>Tim Lehr/lehr@dfki.de</author>
-  <license></license>
+  <license>BSD 3-Clause</license>
   <url>http://</url>
   <logo>http://</logo>
   <depend package="base/cmake" />
